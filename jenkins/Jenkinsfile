@@ -40,8 +40,8 @@ pipeline {
                     input message: 'Finished using the web site? (Click "Proceed" to continue)'
 
                     // Hentikan dan hapus container setelah tes
-                    // sh 'docker stop ${CONTAINER_NAME}'
-                    // sh 'docker rm ${CONTAINER_NAME}'
+                    sh 'docker stop ${CONTAINER_NAME}'
+                    sh 'docker rm ${CONTAINER_NAME}'
                 }
             }
         }
