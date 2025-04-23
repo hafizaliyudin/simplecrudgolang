@@ -1,10 +1,85 @@
+// pipeline {
+//     agent any
+
+//     environment {
+//         IMAGE_NAME = "simplecrudgolang"
+//         CONTAINER_NAME = "simplecrudgolang-jenkins"
+//         // DOCKER_REGISTRY = "" // Ganti dengan registry Anda jika diperlukan
+//     }
+
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 // Checkout kode dari repository
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Build') {
+//             steps {
+//                 script {
+//                     // Build aplikasi menggunakan Docker
+//                     sh 'docker build -t ${IMAGE_NAME} .'
+//                 }
+//             }
+//         }
+
+//         stage('Test') {
+//             steps {
+//                 script {
+//                     // membuat network untuk jenkins pipline
+//                     sh 'docker network create jenkins-network || true'
+//                     // Jalankan container untuk testing
+//                     sh 'docker run --name ${CONTAINER_NAME} --network jenkins-network -d ${IMAGE_NAME}'
+//                     sh 'docker logs ${CONTAINER_NAME}'
+//                     sh 'docker ps -a'
+//                     // Tambahkan perintah untuk menjalankan tes
+//                     // Contoh: curl untuk memeriksa endpoint
+//                     sh 'sleep 1' // Tunggu container siap
+//                     // sh 'curl -f http://${CONTAINER_NAME}:8000/tasks || exit 1'
+//                     input message: 'Finished using the web site? (Click "Proceed" to continue)'
+
+//                     // Hentikan dan hapus container setelah tes
+//                     sh 'docker stop ${CONTAINER_NAME}'
+//                     sh 'docker rm ${CONTAINER_NAME}'
+//                 }
+//             }
+//         }
+
+//         stage('Deploy') {
+//             steps {
+//                 script {
+//                     // Jalankan container untuk deployment
+//                     sh 'docker run --name ${CONTAINER_NAME} --network jenkins-network -d ${IMAGE_NAME}'
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         // always {
+//         //     // Bersihkan resource Docker
+//         //     script {
+//         //         sh 'docker rm -f ${CONTAINER_NAME} || true'
+//         //         sh 'docker rmi ${IMAGE_NAME} || true'
+//         //         sh 'docker network rm jenkins-network || true'
+//         //     }
+//         // }
+//         success {
+//             echo 'Pipeline completed successfully!'
+//         }
+//         failure {
+//             echo 'Pipeline failed!'
+//         }
+//     }
+// }
+
+//===================================================================================
 pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "simplecrudgolang"
-        CONTAINER_NAME = "simplecrudgolang-jenkins"
-        // DOCKER_REGISTRY = "" // Ganti dengan registry Anda jika diperlukan
+        APP_NAME = "simplecrudgolang"
     }
 
     stages {
@@ -18,53 +93,35 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Build aplikasi menggunakan Docker
-                    sh 'docker build -t ${IMAGE_NAME} .'
+                    // Build aplikasi menggunakan Go
+                    sh 'go mod tidy'
+                    sh 'go build -o ${APP_NAME} app.go'
                 }
             }
         }
 
-        stage('Test') {
+        stage('Run') {
             steps {
                 script {
-                    // membuat network untuk jenkins pipline
-                    sh 'docker network create jenkins-network || true'
-                    // Jalankan container untuk testing
-                    sh 'docker run --name ${CONTAINER_NAME} --network jenkins-network -d ${IMAGE_NAME}'
-                    sh 'docker logs ${CONTAINER_NAME}'
-                    sh 'docker ps -a'
-                    // Tambahkan perintah untuk menjalankan tes
-                    // Contoh: curl untuk memeriksa endpoint
-                    sh 'sleep 1' // Tunggu container siap
-                    // sh 'curl -f http://${CONTAINER_NAME}:8000/tasks || exit 1'
-                    input message: 'Finished using the web site? (Click "Proceed" to continue)'
-
-                    // Hentikan dan hapus container setelah tes
-                    sh 'docker stop ${CONTAINER_NAME}'
-                    sh 'docker rm ${CONTAINER_NAME}'
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    // Jalankan container untuk deployment
-                    sh 'docker run --name ${CONTAINER_NAME} --network jenkins-network -d ${IMAGE_NAME}'
+                    // Jalankan aplikasi
+                    sh './${APP_NAME} &'
+                    // Tunggu beberapa detik untuk memastikan aplikasi berjalan
+                    sh 'sleep 5'
+                    // Tes aplikasi dengan curl
+                    sh 'curl -f http://localhost:8000/tasks || exit 1'
                 }
             }
         }
     }
 
     post {
-        // always {
-        //     // Bersihkan resource Docker
-        //     script {
-        //         sh 'docker rm -f ${CONTAINER_NAME} || true'
-        //         sh 'docker rmi ${IMAGE_NAME} || true'
-        //         sh 'docker network rm jenkins-network || true'
-        //     }
-        // }
+        always {
+            script {
+                // Bersihkan binary aplikasi setelah pipeline selesai
+                sh 'pkill -f ${APP_NAME} || true'
+                sh 'rm -f ${APP_NAME}'
+            }
+        }
         success {
             echo 'Pipeline completed successfully!'
         }
