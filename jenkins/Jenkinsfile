@@ -36,7 +36,7 @@ pipeline {
                     // Tambahkan perintah untuk menjalankan tes
                     // Contoh: curl untuk memeriksa endpoint
                     sh 'sleep 1' // Tunggu container siap
-                    // sh 'curl -f http://localhost:8000/tasks || exit 1'
+                    sh 'curl -f http://${CONTAINER_NAME}:8000/tasks || exit 1'
                     input message: 'Finished using the web site? (Click "Proceed" to continue)'
 
                     // Hentikan dan hapus container setelah tes
@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     // Jalankan container untuk deployment
-                    sh 'docker run --name ${CONTAINER_NAME} -d -p 8000:8000 ${IMAGE_NAME}'
+                    sh 'docker run --name ${CONTAINER_NAME} --network jenkins-network -d ${IMAGE_NAME}'
                 }
             }
         }
