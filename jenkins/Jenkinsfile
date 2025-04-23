@@ -107,7 +107,7 @@ pipeline {
             }
         }
 
-        stage('Run') {
+        stage('deployed') {
             steps {
                 script {
                     // Jalankan aplikasi
