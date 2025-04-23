@@ -79,11 +79,14 @@ pipeline {
     agent {
         docker {
             image 'golang:1.21'
+            // args '--user 1000:1000' // Jalankan container dengan user non-root
+            args '-w /workspace'
         }
     }
 
     environment {
         APP_NAME = "simplecrudgolang"
+        GOCACHE = "/tmp/.cache/go-build" // Lokasi cache Go
     }
 
     stages {
