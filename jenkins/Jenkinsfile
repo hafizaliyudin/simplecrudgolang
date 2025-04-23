@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "simplecrudgolang"
+        CONTAINER_NAME = "simplecrudgolang-jenkins"
+        // DOCKER_REGISTRY = "" // Ganti dengan registry Anda jika diperlukan
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout kode dari repository
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    // Build aplikasi menggunakan Docker
+                    sh 'docker build -t ${IMAGE_NAME} .'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    // Jalankan container untuk testing
+                    sh 'docker run --name ${CONTAINER_NAME} -d ${IMAGE_NAME}'
+                    
+                    // Tambahkan perintah untuk menjalankan tes
+                    // Contoh: curl untuk memeriksa endpoint
+                    sh 'sleep 5' // Tunggu container siap
+                    sh 'curl -f http://localhost:8000/tasks || exit 1'
+
+                    // Hentikan dan hapus container setelah tes
+                    sh 'docker stop ${CONTAINER_NAME}'
+                    sh 'docker rm ${CONTAINER_NAME}'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Jalankan container untuk deployment
+                    sh 'docker run --name ${CONTAINER_NAME} -d -p 8000:8000 ${IMAGE_NAME}'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Bersihkan resource Docker
+            script {
+                sh 'docker rm -f ${CONTAINER_NAME} || true'
+                sh 'docker rmi ${IMAGE_NAME} || true'
+            }
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
