@@ -76,7 +76,11 @@
 
 //===================================================================================
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'golang:1.21'
+        }
+    }
 
     environment {
         APP_NAME = "simplecrudgolang"
