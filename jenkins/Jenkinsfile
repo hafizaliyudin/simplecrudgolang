@@ -30,8 +30,9 @@ pipeline {
                     // membuat network untuk jenkins pipline
                     sh 'docker network create jenkins-network || true'
                     // Jalankan container untuk testing
-                    sh 'docker run --name ${CONTAINER_NAME} -d ${IMAGE_NAME}'
-                    
+                    sh 'docker run --name ${CONTAINER_NAME} --network jenkins-network -d ${IMAGE_NAME}'
+                    sh 'docker logs ${CONTAINER_NAME}'
+                    sh 'docker ps -a'
                     // Tambahkan perintah untuk menjalankan tes
                     // Contoh: curl untuk memeriksa endpoint
                     sh 'sleep 5' // Tunggu container siap
