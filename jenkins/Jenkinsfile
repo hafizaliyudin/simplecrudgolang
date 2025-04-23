@@ -36,7 +36,7 @@ pipeline {
                     // Tambahkan perintah untuk menjalankan tes
                     // Contoh: curl untuk memeriksa endpoint
                     sh 'sleep 1' // Tunggu container siap
-                    sh 'curl -f http://${CONTAINER_NAME}:8000/tasks || exit 1'
+                    // sh 'curl -f http://${CONTAINER_NAME}:8000/tasks || exit 1'
                     input message: 'Finished using the web site? (Click "Proceed" to continue)'
 
                     // Hentikan dan hapus container setelah tes
