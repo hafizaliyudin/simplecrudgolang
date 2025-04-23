@@ -35,12 +35,13 @@ pipeline {
                     sh 'docker ps -a'
                     // Tambahkan perintah untuk menjalankan tes
                     // Contoh: curl untuk memeriksa endpoint
-                    sh 'sleep 5' // Tunggu container siap
+                    sh 'sleep 1' // Tunggu container siap
                     // sh 'curl -f http://localhost:8000/tasks || exit 1'
+                    input message: 'Finished using the web site? (Click "Proceed" to continue)'
 
                     // Hentikan dan hapus container setelah tes
-                    sh 'docker stop ${CONTAINER_NAME}'
-                    sh 'docker rm ${CONTAINER_NAME}'
+                    // sh 'docker stop ${CONTAINER_NAME}'
+                    // sh 'docker rm ${CONTAINER_NAME}'
                 }
             }
         }
@@ -56,14 +57,14 @@ pipeline {
     }
 
     post {
-        always {
-            // Bersihkan resource Docker
-            script {
-                sh 'docker rm -f ${CONTAINER_NAME} || true'
-                sh 'docker rmi ${IMAGE_NAME} || true'
-                sh 'docker network rm jenkins-network || true'
-            }
-        }
+        // always {
+        //     // Bersihkan resource Docker
+        //     script {
+        //         sh 'docker rm -f ${CONTAINER_NAME} || true'
+        //         sh 'docker rmi ${IMAGE_NAME} || true'
+        //         sh 'docker network rm jenkins-network || true'
+        //     }
+        // }
         success {
             echo 'Pipeline completed successfully!'
         }
