@@ -26,7 +26,7 @@ RUN go build -o simplecrudgolang app.go
 FROM debian:bullseye-slim
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y sqlite3 libsqlite3-0 && rm -rf /var/lib/apt/lists/*
+    RUN apt-get update && apt-get install -y sqlite3 libsqlite3-0 && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /root/

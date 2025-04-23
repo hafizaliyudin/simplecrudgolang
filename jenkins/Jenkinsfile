@@ -27,6 +27,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
+                    // membuat network untuk jenkins pipline
+                    sh 'docker network create jenkins-network || true'
                     // Jalankan container untuk testing
                     sh 'docker run --name ${CONTAINER_NAME} -d ${IMAGE_NAME}'
                     
@@ -58,6 +60,7 @@ pipeline {
             script {
                 sh 'docker rm -f ${CONTAINER_NAME} || true'
                 sh 'docker rmi ${IMAGE_NAME} || true'
+                sh 'docker network rm jenkins-network || true'
             }
         }
         success {
